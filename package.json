@@ -1,0 +1,31 @@
+{
+  "name": "coroutinify",
+  "version": "0.0.1",
+  "description": "generator based control flow middlware",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --harmony"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taronpa/coroutinify.git"
+  },
+  "keywords": [
+    "async",
+    "flow",
+    "coroutine",
+    "generator",
+    "yield",
+    "await",
+    "es6",
+    "es7",
+    "bluebird",
+    "co"
+  ],
+  "author": "Taron Petrosyan <tgtaron@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/taronpa/coroutinify/issues"
+  },
+  "homepage": "https://github.com/taronpa/coroutinify#readme"
+}
