@@ -1,39 +1,54 @@
-const co = require('bluebird-co');
+'use strict'
+const Promise = require('bluebird');
 
-class Coroutinify {
+Promise.coroutine.addYieldHandler(function(value) {
+    return Promise.resolve(value);
+});
 
-    static co (object, options) {
-        if(object instanceof Function) {
-            return Coroutinify.coroutinify(object, options);
-        }
-        return Coroutinify.coroutinifyAll(object, options);
+function co (object, options) {
+    if(isGeneratorFunction(object)) {
+        return coroutinify(object, options);
     }
-
-    static coroutinify (method, options) {
-        if(!(options && options.name && options.context)) return co.wrap(method, options);
-        let name = options.name;
-        const object = options.context;
-        // Skip constructor
-        if (!(method instanceof Function) || method == object.constructor) return;
-        let nameGen = (typeof name !== 'symbol') ? name + 'Gen' : Symbol.for(name.toString() + 'Gen');
-        object[nameGen] = method;
-        object[name] = co.wrap(method, options);
-
-    }
-
-    static coroutinifyAll (object) {
-        Object.getOwnPropertyNames(Object.getPrototypeOf(object)).forEach((name) => {
-            Coroutinify.coroutinify(object[name], { context: object, name: name });
-        });
-
-        Object.getOwnPropertySymbols(Object.getPrototypeOf(object)).forEach((name) => {
-            Coroutinify.coroutinify(object[name], { context: object, name: name });
-        });
-        return object;
-    }
+    return coroutinifyAll(object, options);
 }
 
+function coroutinify (method, options) {
+    // Skip non generators
+    if (!co.isGeneratorFunction(method)) return;
+    if(!(options && options.name && options.context)) return Promise.coroutine(method, options);
+    let name = options.name;
+    const object = options.context;
+    let nameGen = (typeof name !== 'symbol') ? name + 'Gen' : Symbol.for(name.toString() + 'Gen');
+    object[nameGen] = method;
+    object[name] = Promise.coroutine(method, options);
+}
 
-module.exports = Coroutinify.co;
-module.exports.coroutinify = Coroutinify.coroutinify;
-module.exports.coroutinifyAll = Coroutinify.coroutinifyAll;
+function coroutinifyAll (object) {
+    var properties = [];
+    properties.push.apply(properties, Object.getOwnPropertyNames(Object.getPrototypeOf(object)));
+    properties.push.apply(properties, Object.getOwnPropertyNames(object));
+    properties.push.apply(properties, Object.getOwnPropertySymbols(Object.getPrototypeOf(object)));
+    properties.push.apply(properties, Object.getOwnPropertySymbols(object));
+
+    properties.forEach((name) => {
+        coroutinify(object[name], { context: object, name: name });
+    });
+    return object;
+}
+
+function isGeneratorFunction (object) {
+    let constructor = object.constructor;
+    if (!constructor) return false;
+    if ('GeneratorFunction' === constructor.name || 'GeneratorFunction' === constructor.displayName) return true;
+    return isGenerator(constructor.prototype);
+}
+
+function isGenerator (object) {
+    return 'function' == typeof object.next && 'function' == typeof object.throw;
+}
+
+module.exports = co;
+module.exports.coroutinify = coroutinify;
+module.exports.coroutinifyAll = coroutinifyAll;
+module.exports.isGeneratorFunction = isGeneratorFunction;
+module.exports.isGenerator = isGenerator;
