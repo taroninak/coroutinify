@@ -37,6 +37,7 @@ function coroutinifyAll (object) {
 }
 
 function isGeneratorFunction (object) {
+    if(!object) return false;
     let constructor = object.constructor;
     if (!constructor) return false;
     if ('GeneratorFunction' === constructor.name || 'GeneratorFunction' === constructor.displayName) return true;
