@@ -1,6 +1,6 @@
 {
   "name": "coroutinify",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "generator based control flow middlware",
   "main": "index.js",
   "scripts": {
